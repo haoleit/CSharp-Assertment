@@ -1,0 +1,15 @@
+# Backend (C#)
+*.csproj.user
+*.sln.docstates
+*.suo
+*.user
+*.cache
+/backend/TaskManagerAPI/bin
+/backend/TaskManagerAPI/obj
+
+# Frontend (React)
+node_modules
+/dist
+
+# General
+.DS_Store
