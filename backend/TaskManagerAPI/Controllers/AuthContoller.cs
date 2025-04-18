@@ -52,5 +52,28 @@ namespace TaskManagerAPI.Controllers
 
             return BadRequest(new { message = result });
         }
+
+        [HttpGet("session")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var user = await _authService.GetProfileAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { message = "User is not authenticated." });
+            }
+
+            return Ok(new { userName = user.UserName, email = user.Email });  // Return basic user info
+        }
+
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var result = await _authService.LogOutAsync();
+            return Ok(new { message = result });  // Return the success message from LogOut method
+        }
+
+
+
     }
 }

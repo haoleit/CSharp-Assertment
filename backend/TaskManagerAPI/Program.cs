@@ -17,9 +17,10 @@ using TaskManagerAPI.Repositories.impl;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đăng ký các Service vào DI Container
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-
+builder.Services.AddScoped<ITaskService, TaskService>(); // Register TaskService
 // Cấu hình PostgreSQL
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -48,7 +49,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Thêm các dịch vụ khác
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
+builder.Services.AddCors(options=>{
+    options.AddPolicy("AllowReactApp",builder=>
+        builder.WithOrigins("http://localhost:5173")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials()
+        );
+});
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -103,12 +111,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors(options =>
-{
-    options.AllowAnyHeader();
-    options.AllowAnyMethod();
-    options.AllowAnyOrigin();
-});
+
+app.UseCors("AllowReactApp");
+
+// app.UseCors(options =>
+// {
+    
+//     options.AllowAnyHeader();
+//     options.AllowAnyMethod();
+//     options.AllowAnyOrigin();
+// });
 // Middleware
 app.UseAuthentication();
 app.UseAuthorization();

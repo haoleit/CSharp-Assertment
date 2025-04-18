@@ -10,6 +10,6 @@ namespace TaskManagerAPI.Data
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
         // Có thể thêm DbSet khác nếu cần
-        // public DbSet<Task> Tasks { get; set; }
+        public DbSet<Models.Task> Tasks { get; set; }
     }
 }

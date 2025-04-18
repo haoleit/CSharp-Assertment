@@ -1,95 +1,161 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import axios from "axios";
+import CreateTaskModal from "../components/CreateTaskModal"; // Import CreateTaskModal
+import EditTaskModal from "../components/EditTaskModal"; // Import EditTaskModal
 
 function Dashboard() {
   const navigate = useNavigate();
-
-  // Dữ liệu giả cho các task (giống như đã làm ở trên)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false); // State to toggle CreateTaskModal
+  const [showEditModal, setShowEditModal] = useState(false); // State to toggle EditTaskModal
+  const [taskToEdit, setTaskToEdit] = useState(null); // Task to edit in EditTaskModal
+
+  const getStatusString = (statusValue) => {
+    switch (statusValue) {
+      case 0:
+        return "To Do";
+      case 1:
+        return "In Progress";
+      case 2:
+        return "Completed";
+      default:
+        return "Unknown";
+    }
+  };
+
+  const fetchTasks = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get("http://localhost:5069/api/Tasks", {
+        withCredentials: true,
+      });
+      const tasksWithDates = response.data.map((task) => ({
+        ...task,
+        dueDate: task.dueDate ? new Date(task.dueDate) : null,
+      }));
+      setTasks(tasksWithDates);
+      setFilteredTasks(tasksWithDates);
+    } catch (err) {
+      setError("Failed to load tasks. Please try again later.");
+      if (err.response && err.response.status === 401) {
+        navigate("/login");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const data = [
-      {
-        id: 1,
-        title: "Complete React Project",
-        description: "Finish building the React task manager project.",
-        status: "in progress",
-        dueDate: new Date(2025, 4, 5),
-      },
-      {
-        id: 2,
-        title: "Buy groceries",
-        description: "Get fruits, vegetables, and milk.",
-        status: "completed",
-        dueDate: new Date(2025, 3, 20),
-      },
-      {
-        id: 3,
-        title: "Prepare for interview",
-        description: "Review algorithm and data structures.",
-        status: "to-do",
-        dueDate: new Date(2025, 4, 10),
-      },
-      {
-        id: 4,
-        title: "Clean the house",
-        description: "Vacuum and mop the floors.",
-        status: "to-do",
-        dueDate: new Date(2025, 4, 2),
-      },
-      {
-        id: 5,
-        title: "Fix bugs in code",
-        description: "Fix bugs reported by QA team.",
-        status: "in progress",
-        dueDate: new Date(2025, 3, 30),
-      },
-    ];
-    setTasks(data);
-    setFilteredTasks(data);
-  }, []);
+    axios
+      .get("http://localhost:5069/api/Auth/session", { withCredentials: true })
+      .then(() => {
+        setIsAuthenticated(true);
+        fetchTasks();
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+        navigate("/login");
+      });
+  }, [navigate]);
 
-  // Xử lý logout
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // Xoá token
-    navigate("/login"); // Điều hướng về trang đăng nhập
+  useEffect(() => {
+    let processedTasks = [...tasks];
+    if (statusFilter !== "") {
+      processedTasks = processedTasks.filter(
+        (task) => task.status === parseInt(statusFilter)
+      );
+    }
+    processedTasks.sort((a, b) => {
+      const dateA = a.dueDate
+        ? a.dueDate.getTime()
+        : sortOrder === "asc"
+        ? Infinity
+        : -Infinity;
+      const dateB = b.dueDate
+        ? b.dueDate.getTime()
+        : sortOrder === "asc"
+        ? Infinity
+        : -Infinity;
+      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
+    setFilteredTasks(processedTasks);
+  }, [tasks, statusFilter, sortOrder]);
+
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5069/api/auth/logout",
+        {},
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("An error occurred during logout:", error);
+    }
   };
 
-  // Xử lý filtering
-  const handleStatusFilter = (status) => {
-    setStatusFilter(status);
-    const filtered = tasks.filter((task) =>
-      status ? task.status === status : true
-    );
-    setFilteredTasks(filtered);
+  const handleStatusFilter = (statusValue) => {
+    setStatusFilter(statusValue);
   };
 
-  // Xử lý sorting
   const handleSort = (order) => {
     setSortOrder(order);
-    const sorted = [...filteredTasks].sort((a, b) => {
-      if (order === "asc") {
-        return a.dueDate - b.dueDate;
-      } else {
-        return b.dueDate - a.dueDate;
-      }
-    });
-    setFilteredTasks(sorted);
   };
+
+  const handleEditTask = (task) => {
+    setTaskToEdit(task);
+    setShowEditModal(true);
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) {
+      return;
+    }
+    try {
+      await axios.delete(`http://localhost:5069/api/Tasks/${taskId}`, {
+        withCredentials: true,
+      });
+      fetchTasks();
+    } catch (err) {
+      setError("Failed to delete task. Please try again.");
+      if (err.response && err.response.status === 401) {
+        navigate("/login");
+      }
+    }
+  };
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">My Tasks</h1>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-        >
-          Logout
-        </button>
+        <div className="flex space-x-4">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+          >
+            Create New Task
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Filtering */}
@@ -104,9 +170,9 @@ function Dashboard() {
             className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 ease-in-out hover:bg-blue-50"
           >
             <option value="">All</option>
-            <option value="to-do">To Do</option>
-            <option value="in progress">In Progress</option>
-            <option value="completed">Completed</option>
+            <option value={0}>To Do</option>
+            <option value={1}>In Progress</option>
+            <option value={2}>Completed</option>
           </select>
         </div>
 
@@ -138,32 +204,93 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Task List */}
-      <div className="space-y-4">
-        {filteredTasks.map((task) => (
-          <div
-            key={task.id}
-            className="bg-white p-4 rounded shadow-md hover:shadow-lg transition duration-200 ease-in-out"
-          >
-            <h3 className="text-xl font-semibold">{task.title}</h3>
-            <p>{task.description}</p>
-            <p
-              className={`text-sm ${
-                task.status === "completed"
-                  ? "text-green-500"
-                  : task.status === "in progress"
-                  ? "text-yellow-500"
-                  : "text-gray-500"
-              }`}
-            >
-              Status: {task.status}
-            </p>
-            <p className="text-sm text-gray-400">
-              Due: {task.dueDate.toLocaleDateString()}
-            </p>
-          </div>
-        ))}
-      </div>
+      {/* Task List Area */}
+      {isLoading && (
+        <p className="text-center text-gray-500">Loading tasks...</p>
+      )}
+      {error && <p className="text-center text-red-500">{error}</p>}
+      {!isLoading && !error && (
+        <div className="space-y-4">
+          {filteredTasks.length === 0 ? (
+            <p className="text-center text-gray-500">No tasks found.</p>
+          ) : (
+            filteredTasks.map((task) => (
+              <div
+                key={task.id}
+                className="bg-white p-4 rounded shadow-md hover:shadow-lg transition duration-200 ease-in-out flex justify-between items-start"
+              >
+                <div>
+                  <h3 className="text-xl font-semibold">{task.title}</h3>
+                  <p className="text-gray-700 my-1">
+                    {task.description || "No description"}
+                  </p>
+                  <p
+                    className={`text-sm font-medium ${
+                      task.status === 2
+                        ? "text-green-600"
+                        : task.status === 1
+                        ? "text-yellow-600"
+                        : "text-blue-600"
+                    }`}
+                  >
+                    Status: {getStatusString(task.status)}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Due:{" "}
+                    {task.dueDate
+                      ? task.dueDate.toLocaleDateString()
+                      : "No due date"}
+                  </p>
+                </div>
+
+                <div className="mt-3 flex space-x-2">
+                  <button
+                    onClick={() => handleEditTask(task)}
+                    className="text-sm bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTask(task.id)}
+                    className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Create Task Modal */}
+      {showCreateModal && (
+        <CreateTaskModal
+          show={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSubmitSuccess={() => {
+            setShowCreateModal(false);
+            fetchTasks();
+          }}
+          TaskStatus={{ ToDo: 0, InProgress: 1, Completed: 2 }} // Pass status enum
+          navigate={navigate}
+        />
+      )}
+
+      {/* Edit Task Modal */}
+      {showEditModal && taskToEdit && (
+        <EditTaskModal
+          show={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSubmitSuccess={() => {
+            setShowEditModal(false);
+            fetchTasks();
+          }}
+          taskToEdit={taskToEdit}
+          TaskStatus={{ ToDo: 0, InProgress: 1, Completed: 2 }}
+          navigate={navigate}
+        />
+      )}
     </div>
   );
 }

@@ -14,11 +14,13 @@ namespace TaskManagerAPI.Services.impl
     {
         private readonly IAuthRepository _authRepository;
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthService(IAuthRepository authRepository, IConfiguration configuration)
+        public AuthService(IAuthRepository authRepository, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _authRepository = authRepository;
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<string> RegisterAsync(RegisterDto registerDto)
@@ -45,7 +47,17 @@ namespace TaskManagerAPI.Services.impl
             }
 
             var token = GenerateJwtToken(user);
-            return token;
+            // Set JWT token in HttpOnly Cookie
+            var response = _httpContextAccessor.HttpContext.Response;
+            response.Cookies.Append("access_token", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.Now.AddDays(1)
+            });
+
+            return "Logged in successfully.";
         }
 
         public async Task<string> AssignRoleAsync(AssignRoleDto assignRoleDto)
@@ -85,6 +97,88 @@ namespace TaskManagerAPI.Services.impl
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        private ClaimsPrincipal ValidateJwtToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+
+            try
+            {
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"],
+                    ValidAudience = _configuration["Jwt:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                };
+
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+
+
+
+                return principal;
+            }
+            catch
+            {
+                return null; // Token is invalid
+            }
+        }
+
+
+        public async Task<ApplicationUser?> GetProfileAsync()
+        {
+            var token = _httpContextAccessor.HttpContext.Request.Cookies["access_token"];
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return null;
+            }
+
+            // Validate the token
+            var claimsPrincipal = ValidateJwtToken(token);
+            if (claimsPrincipal == null)
+            {
+                return null;
+            }
+
+            // If token is valid, you can retrieve user info
+
+            var username = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+
+            var user = await _authRepository.GetUserByUsernameAsync(username);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            return user;
+        }
+
+        public async Task<string> LogOutAsync()
+        {
+            // Remove the access_token cookie
+            var response = _httpContextAccessor.HttpContext.Response;
+            response.Cookies.Delete("access_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict
+            });
+
+            return "User logged out successfully";
+        }
+
+
 
     }
+
+
+
+
+
+
 }
