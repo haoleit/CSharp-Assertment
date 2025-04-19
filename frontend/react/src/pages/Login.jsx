@@ -6,12 +6,13 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:5069";
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+    console.log("Hello");
     const response = await axios.post(
-      "http://localhost:5069/api/Auth/login",
+      `${API_BASE}/api/Auth/login`,
       {
         email,
         password,

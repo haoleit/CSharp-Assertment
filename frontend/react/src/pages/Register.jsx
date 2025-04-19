@@ -6,7 +6,7 @@ function Register() {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const navigate = useNavigate();
-
+  
   const handleRegister = async (e) => {
     e.preventDefault();
 

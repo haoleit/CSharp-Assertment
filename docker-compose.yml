@@ -1,16 +1,21 @@
 version: "3.8"
 
 services:
-  # backend:
-  #   build: ./backend
-  #   restart: always
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     ASPNETCORE_ENVIRONMENT: Development
-  #     DATABASE_URL: Host=db;Database=task_management;Username=postgres;Password=admin
-  #   depends_on:
-  #     - db
+  backend:
+    build:
+      context: .
+      dockerfile: backend/TaskManagerAPI/Dockerfile
+    restart: always
+    ports:
+      - "5069:5069" 
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=db;Database=task_management;Username=postgres;Password=admin
+      ASPNETCORE_URLS: http://+:5069 # Tell ASP.NET Core to listen on the exposed port
+      Jwt__Issuer: "taskmanagerapi" 
+      Jwt__Key: "my_super_secret_key_1234567890123456789012345678901" 
+    depends_on:
+      - db
 
   frontend:
     build:
@@ -18,6 +23,29 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend/react:/app
-    stdin_open: true
-    tty: true
+   
+      - ./frontend/react/src:/app/src
+    
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5069 # Pass backend URL to frontent
+    stdin_open: true 
+    tty: true        
+    depends_on:
+      - backend 
+
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: task_management
+    ports:
+      - "5432:5432" 
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      # - ./init-data.sql:/docker-entrypoint-initdb.d/init-data.sql
+
+volumes:
+  db_data: 
