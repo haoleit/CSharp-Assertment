@@ -2,7 +2,7 @@
 
 ## Description
 
-A simple task management system with a React frontend, a .NET Core backend, and a PostgreSQL database.
+A simple task management system built with a React frontend, .NET Core backend, and PostgreSQL database. The application supports task creation, tracking, and status management, and is designed to be deployed either locally or via Docker.
 
 ## Getting Started
 
@@ -10,18 +10,44 @@ A simple task management system with a React frontend, a .NET Core backend, and 
 
 - Docker
 - Docker Compose
+- .NET SDK 9.0+
+- Node.js (for frontend development)
 
 ### Running the Application
 
-1.  Clone the repository.
-2.  Navigate to the `TaskManagementSystem` directory.
-3.  Run `docker-compose -f docker-compose.db.yml up -d` to start the database.
-4.  Run `docker-compose up -d` to start the backend and frontend.
+#### 🔧 Option 1: Run Locally
+
+1.  **Start PostgreSQL Database**
+    ```bash
+    docker-compose -f docker-compose.db.yml up -d
+    ```
+2.  **Backend Setup**
+    ```bash
+    cd backend/TaskManagerAPI
+    dotnet ef database update
+    dotnet run
+    ```
+3.  **Frontend Setup**
+    ```bash
+    cd frontend/react
+    npm install
+    npm run dev
+    ```
+
+#### 🐳 Option 2: Run with Docker (Backend + Frontend)
+
+```bash
+docker-compose -f docker-compose.yml up -d
+```
+
+### Services and URLs
+
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:5069
+- **API Documentation (Swagger):** http://localhost:5069/swagger
 
 ## API Documentation
 
-API documentation can be generated using Swagger or Postman.
+The API documentation is available via Swagger at the `/swagger` endpoint of the backend server.
 
-## Deployment
 
-Deployment instructions will be provided later.

@@ -20,6 +20,7 @@ services:
   frontend:
     build:
       context: ./frontend/react
+    restart: always
     ports:
       - "5173:5173"
     volumes:
