@@ -1,8 +1,8 @@
-// frontend/react/src/components/CreateTaskModal.jsx
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-// Receive TaskStatus enum/mapping from props
+
 function CreateTaskModal({
   show,
   onClose,
@@ -13,12 +13,12 @@ function CreateTaskModal({
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
-    status: TaskStatus.ToDo, // Use passed TaskStatus
+    status: TaskStatus.ToDo,
     dueDate: "",
   });
   const [createError, setCreateError] = useState(null);
 
-  // Reset form when the modal is shown or closed
+  
   useEffect(() => {
     if (show) {
       setNewTask({
@@ -56,7 +56,7 @@ function CreateTaskModal({
       await axios.post("http://localhost:5069/api/Tasks", taskToSubmit, {
         withCredentials: true,
       });
-      onSubmitSuccess(); // Notify parent component (Dashboard)
+      onSubmitSuccess(); 
     } catch (err) {
       console.error("Error creating task:", err);
       setCreateError(
@@ -163,7 +163,7 @@ function CreateTaskModal({
           <div className="flex justify-end space-x-2">
             <button
               type="button"
-              onClick={onClose} // Use onClose prop
+              onClick={onClose} 
               className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
             >
               Cancel

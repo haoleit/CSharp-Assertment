@@ -1,8 +1,8 @@
-// frontend/react/src/components/EditTaskModal.jsx
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-// Receive TaskStatus enum/mapping and task data from props
+
 function EditTaskModal({
   show,
   onClose,
@@ -14,19 +14,19 @@ function EditTaskModal({
   const [editingTask, setEditingTask] = useState(null);
   const [editError, setEditError] = useState(null);
 
-  // Initialize form state when taskToEdit changes or modal opens
+
   useEffect(() => {
     if (show && taskToEdit) {
       setEditingTask({
         ...taskToEdit,
-        // Format date for the input type="date" if it exists, otherwise empty string
+     
         dueDate: taskToEdit.dueDate
           ? new Date(taskToEdit.dueDate).toISOString().split("T")[0]
           : "",
       });
-      setEditError(null); // Clear previous errors
+      setEditError(null); 
     } else {
-      // Reset if modal is closed or no task is provided
+      
       setEditingTask(null);
       setEditError(null);
     }
@@ -61,7 +61,7 @@ function EditTaskModal({
           withCredentials: true,
         }
       );
-      onSubmitSuccess(); // Notify parent component (Dashboard)
+      onSubmitSuccess(); 
     } catch (err) {
       console.error("Error updating task:", err);
       setEditError(
@@ -76,7 +76,7 @@ function EditTaskModal({
     }
   };
 
-  // Don't render if not shown or no task is being edited
+  
   if (!show || !editingTask) {
     return null;
   }
@@ -118,7 +118,7 @@ function EditTaskModal({
               name="description"
               id="edit-description"
               rows="3"
-              value={editingTask.description || ""} // Handle null description
+              value={editingTask.description || ""} 
               onChange={handleEditTaskChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             ></textarea>
@@ -155,7 +155,7 @@ function EditTaskModal({
               type="date"
               name="dueDate"
               id="edit-dueDate"
-              value={editingTask.dueDate} // Value is pre-formatted in useEffect
+              value={editingTask.dueDate} 
               onChange={handleEditTaskChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
@@ -169,7 +169,7 @@ function EditTaskModal({
           <div className="flex justify-end space-x-2">
             <button
               type="button"
-              onClick={onClose} // Use onClose prop
+              onClick={onClose} 
               className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
             >
               Cancel

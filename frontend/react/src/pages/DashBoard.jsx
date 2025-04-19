@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import CreateTaskModal from "../components/CreateTaskModal"; // Import CreateTaskModal
-import EditTaskModal from "../components/EditTaskModal"; // Import EditTaskModal
+import CreateTaskModal from "../components/CreateTaskModal"; 
+import EditTaskModal from "../components/EditTaskModal"; 
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -13,9 +13,9 @@ function Dashboard() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showCreateModal, setShowCreateModal] = useState(false); // State to toggle CreateTaskModal
-  const [showEditModal, setShowEditModal] = useState(false); // State to toggle EditTaskModal
-  const [taskToEdit, setTaskToEdit] = useState(null); // Task to edit in EditTaskModal
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false); 
+  const [taskToEdit, setTaskToEdit] = useState(null); 
 
   const getStatusString = (statusValue) => {
     switch (statusValue) {
@@ -272,7 +272,7 @@ function Dashboard() {
             setShowCreateModal(false);
             fetchTasks();
           }}
-          TaskStatus={{ ToDo: 0, InProgress: 1, Completed: 2 }} // Pass status enum
+          TaskStatus={{ ToDo: 0, InProgress: 1, Completed: 2 }} 
           navigate={navigate}
         />
       )}

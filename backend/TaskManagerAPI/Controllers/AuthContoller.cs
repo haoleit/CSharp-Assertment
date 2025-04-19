@@ -1,4 +1,4 @@
-// Controllers/AuthController.cs
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -65,7 +65,7 @@ namespace TaskManagerAPI.Controllers
                 return Unauthorized(new { message = "User is not authenticated." });
             }
 
-            return Ok(new { userName = user.UserName, email = user.Email });  // Return basic user info
+            return Ok(new { userName = user.UserName, email = user.Email }); 
         }
 
 
@@ -73,7 +73,7 @@ namespace TaskManagerAPI.Controllers
         public async Task<IActionResult> Logout()
         {
             var result = await _authService.LogOutAsync();
-            return Ok(new { message = result });  // Return the success message from LogOut method
+            return Ok(new { message = result });  
         }
 
 

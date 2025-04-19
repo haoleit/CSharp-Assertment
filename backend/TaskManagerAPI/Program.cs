@@ -16,21 +16,21 @@ using TaskManagerAPI.Repositories.impl;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Đăng ký các Service vào DI Container
+
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ITaskService, TaskService>(); // Register TaskService
-// Cấu hình PostgreSQL
+
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Cấu hình Identity với PostgreSQL
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<DataContext>()
     .AddDefaultTokenProviders();
 
-// Cấu hình JWT Authentication
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -46,7 +46,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Thêm các dịch vụ khác
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddCors(options =>
@@ -91,8 +91,7 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 
-// Tạo vai trò mặc định nếu chưa tồn tại
-// Apply EF Core Migrations and Seed Roles
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -102,7 +101,7 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<DataContext>();
         context.Database.Migrate(); // Applies pending migrations
 
-        // Seed Roles
+       
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         string[] roleNames = ["Admin", "User"];
 
@@ -117,27 +116,15 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        // Log error - consider a proper logging framework
+        
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred during database migration or seeding.");
-        // Optionally, rethrow or handle appropriately depending on desired startup behavior on error
+        
     }
 }
 
 
-// Tạo vai trò mặc định nếu chưa tồn tại
-// var scope = app.Services.CreateScope(); // Commented out or remove original seeding block start
-// var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>(); // Commented out
-// string[] roleNames = ["Admin", "User"]; // Commented out
 
-// foreach (var role in roleNames) // Commented out
-// { // Commented out
-//     var roleExist = await roleManager.RoleExistsAsync(role); // Commented out
-//     if (!roleExist) // Commented out
-//     { // Commented out
-//         await roleManager.CreateAsync(new IdentityRole(role)); // Commented out
-//     } // Commented out
-// } // Commented out or remove original seeding block end
 
 if (app.Environment.IsDevelopment())
 {
