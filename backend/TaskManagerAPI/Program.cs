@@ -1,4 +1,4 @@
-// Program.cs (hoặc Startup.cs cho các phiên bản trước .NET 6)
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
@@ -49,8 +49,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Thêm các dịch vụ khác
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddCors(options=>{
-    options.AddPolicy("AllowReactApp",builder=>
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", builder =>
         builder.WithOrigins("http://localhost:5173")
         .AllowAnyMethod()
         .AllowAnyHeader()
@@ -116,7 +117,7 @@ app.UseCors("AllowReactApp");
 
 // app.UseCors(options =>
 // {
-    
+
 //     options.AllowAnyHeader();
 //     options.AllowAnyMethod();
 //     options.AllowAnyOrigin();

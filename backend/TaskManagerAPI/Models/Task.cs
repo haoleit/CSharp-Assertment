@@ -27,10 +27,10 @@ namespace TaskManagerAPI.Models
 
         public DateTime? DueDate { get; set; }
 
-        // Foreign Key for ApplicationUser
+
         public string UserId { get; set; } = string.Empty;
 
-        // Navigation property
+
         [ForeignKey("UserId")]
         public virtual ApplicationUser? User { get; set; }
 

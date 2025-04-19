@@ -1,4 +1,5 @@
 // Controllers/AuthController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using TaskManagerAPI.DTOs;
@@ -18,6 +19,7 @@ namespace TaskManagerAPI.Controllers
         }
 
         [HttpPost("register")]
+
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
             var result = await _authService.RegisterAsync(registerDto);
@@ -30,6 +32,7 @@ namespace TaskManagerAPI.Controllers
         }
 
         [HttpPost("login")]
+
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             var token = await _authService.LoginAsync(loginDto);

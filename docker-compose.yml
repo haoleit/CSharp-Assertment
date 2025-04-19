@@ -1,21 +1,23 @@
 version: "3.8"
 
 services:
-  backend:
-    build: ./backend
-    restart: always
-    ports:
-      - "5000:5000"
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      DATABASE_URL: Host=db;Database=task_management;Username=postgres;Password=admin
-    depends_on:
-      - db
+  # backend:
+  #   build: ./backend
+  #   restart: always
+  #   ports:
+  #     - "5000:5000"
+  #   environment:
+  #     ASPNETCORE_ENVIRONMENT: Development
+  #     DATABASE_URL: Host=db;Database=task_management;Username=postgres;Password=admin
+  #   depends_on:
+  #     - db
 
   frontend:
-    build: ./frontend
-    restart: always
+    build:
+      context: ./frontend/react
     ports:
-      - "3000:3000"
-    depends_on:
-      - backend
+      - "5173:5173"
+    volumes:
+      - ./frontend/react:/app
+    stdin_open: true
+    tty: true

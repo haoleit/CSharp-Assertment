@@ -49,7 +49,7 @@ function CreateTaskModal({
       title: newTask.title,
       description: newTask.description || null,
       status: parseInt(newTask.status),
-      dueDate: newTask.dueDate ? new Date(newTask.dueDate) + 3 : new Date() + 3,
+      dueDate: newTask.dueDate ? new Date(newTask.dueDate) : new Date() + 3,
     };
 
     try {

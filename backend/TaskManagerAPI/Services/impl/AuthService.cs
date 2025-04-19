@@ -32,7 +32,7 @@ namespace TaskManagerAPI.Services.impl
                 return "Registration failed.";
             }
 
-            // Thêm vai trò mặc định cho người dùng (User)
+
             await _authRepository.AddRoleToUserAsync(user, "User");
 
             return "User registered successfully.";
@@ -47,7 +47,7 @@ namespace TaskManagerAPI.Services.impl
             }
 
             var token = GenerateJwtToken(user);
-            // Set JWT token in HttpOnly Cookie
+
             var response = _httpContextAccessor.HttpContext.Response;
             response.Cookies.Append("access_token", token, new CookieOptions
             {
@@ -122,7 +122,7 @@ namespace TaskManagerAPI.Services.impl
             }
             catch
             {
-                return null; // Token is invalid
+                return null;
             }
         }
 
@@ -143,7 +143,6 @@ namespace TaskManagerAPI.Services.impl
                 return null;
             }
 
-            // If token is valid, you can retrieve user info
 
             var username = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -160,7 +159,7 @@ namespace TaskManagerAPI.Services.impl
 
         public async Task<string> LogOutAsync()
         {
-            // Remove the access_token cookie
+
             var response = _httpContextAccessor.HttpContext.Response;
             response.Cookies.Delete("access_token", new CookieOptions
             {

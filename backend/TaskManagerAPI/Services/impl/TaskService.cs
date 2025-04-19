@@ -1,12 +1,9 @@
-// backend/TaskManagerAPI/Services/impl/TaskService.cs
+
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using TaskManagerAPI.Data;
 using TaskManagerAPI.DTOs;
-using TaskManagerAPI.Models; // Required for Task and TaskStatus
+using TaskManagerAPI.Models;
 
 namespace TaskManagerAPI.Services.impl
 {
@@ -21,11 +18,11 @@ namespace TaskManagerAPI.Services.impl
 
         public async Task<TaskDto> CreateTaskAsync(CreateTaskDto taskDto, string userId)
         {
-            var task = new Models.Task // Fully qualify Task
+            var task = new Models.Task
             {
                 Title = taskDto.Title,
                 Description = taskDto.Description,
-                Status = taskDto.Status ?? Models.TaskStatus.ToDo, // Use qualified TaskStatus, default if null
+                Status = taskDto.Status ?? Models.TaskStatus.ToDo,
                 DueDate = taskDto.DueDate,
                 UserId = userId,
                 CreatedAt = DateTime.UtcNow,
@@ -44,7 +41,7 @@ namespace TaskManagerAPI.Services.impl
 
             if (task == null)
             {
-                return false; // Task not found or doesn't belong to the user
+                return false;
             }
 
             _context.Tasks.Remove(task);
@@ -55,7 +52,7 @@ namespace TaskManagerAPI.Services.impl
         public async Task<TaskDto?> GetTaskByIdAsync(int taskId, string userId)
         {
             var task = await _context.Tasks
-                                     .AsNoTracking() // Read-only operation
+                                     .AsNoTracking()
                                      .FirstOrDefaultAsync(t => t.Id == taskId && t.UserId == userId);
 
             return task == null ? null : MapTaskToDto(task);
@@ -65,11 +62,11 @@ namespace TaskManagerAPI.Services.impl
         {
             var tasks = await _context.Tasks
                                       .Where(t => t.UserId == userId)
-                                      .AsNoTracking() // Read-only operation
-                                      .OrderByDescending(t => t.CreatedAt) // Example ordering
+                                      .AsNoTracking()
+                                      .OrderByDescending(t => t.CreatedAt)
                                       .ToListAsync();
 
-            return tasks.Select(MapTaskToDto); // Use the helper method for mapping
+            return tasks.Select(MapTaskToDto);
         }
 
         public async Task<bool> UpdateTaskAsync(int taskId, UpdateTaskDto taskDto, string userId)
@@ -78,15 +75,15 @@ namespace TaskManagerAPI.Services.impl
 
             if (task == null)
             {
-                return false; // Task not found or doesn't belong to the user
+                return false;
             }
 
-            // Update fields only if they are provided in the DTO
+
             if (taskDto.Title != null)
             {
                 task.Title = taskDto.Title;
             }
-            if (taskDto.Description != null) // Allow setting description to null/empty
+            if (taskDto.Description != null)
             {
                 task.Description = taskDto.Description;
             }
@@ -94,14 +91,14 @@ namespace TaskManagerAPI.Services.impl
             {
                 task.Status = taskDto.Status.Value;
             }
-            if (taskDto.DueDate.HasValue) // Allow setting due date to null
+            if (taskDto.DueDate.HasValue)
             {
                 task.DueDate = taskDto.DueDate;
             }
 
             if (task.CreatedAt.Kind == DateTimeKind.Unspecified)
             {
-                task.CreatedAt = task.CreatedAt.ToUniversalTime(); // Convert to UTC if unspecified
+                task.CreatedAt = task.CreatedAt.ToUniversalTime();
             }
 
 
@@ -116,20 +113,20 @@ namespace TaskManagerAPI.Services.impl
             }
             catch (DbUpdateConcurrencyException)
             {
-                // Handle concurrency conflict if necessary
+
                 return false;
             }
         }
 
-        // Helper method to map Task entity to TaskDto
-        private static TaskDto MapTaskToDto(Models.Task task) // Fully qualify Task
+
+        private static TaskDto MapTaskToDto(Models.Task task)
         {
             return new TaskDto
             {
                 Id = task.Id,
                 Title = task.Title,
                 Description = task.Description,
-                Status = task.Status, // No need to qualify here as it's assigned from qualified task.Status
+                Status = task.Status,
                 DueDate = task.DueDate,
                 CreatedAt = task.CreatedAt,
                 UpdatedAt = task.UpdatedAt,

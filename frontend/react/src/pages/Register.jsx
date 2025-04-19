@@ -1,16 +1,30 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import axios from "axios";
 function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    localStorage.setItem("token", "demo_token");
-    navigate("/");
+
+    const response = await axios.post(
+      "http://localhost:5069/api/Auth/register",
+      { username, email, password },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log(response);
+    if (response.status == 200) {
+      navigate("/");
+    } else {
+      setError(response.message || "Register failed");
+    }
   };
 
   return (
