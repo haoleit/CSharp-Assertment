@@ -10,7 +10,7 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Hello");
+
     const response = await axios.post(
       `${API_BASE}/api/Auth/login`,
       {
